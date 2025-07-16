@@ -22,7 +22,8 @@ class ImageReader:
             api_url="https://detect.roboflow.com",
             api_key="EheH0mexmA60NICeX1rp"
         )
-        result = CLIENT.infer(image, model_id="license-plate-recognition-rxg4e/6")
+        confidence_threshold = 0.5
+        result = CLIENT.infer(image, model_id="license-plate-recognition-rxg4e/6", confidence_threshold=confidence_threshold)
         print(result[predictions])
         return result[predictions]
 
@@ -86,9 +87,5 @@ class ImageReader:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python image_reader.py <path_to_image> [save_path]")
-        sys.exit(1)
-
-    image_path = sys.argv[1]
+    image_path = "image/dsa.jpg"
     reader = ImageReader(image_path)
