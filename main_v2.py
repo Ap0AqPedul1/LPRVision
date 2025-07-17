@@ -8,7 +8,7 @@ license_plate_detector = YOLO("license_plate_detector.pt")
 rtsp_url  = "rtsp://admin:adybangun12@192.168.0.64:554/Streaming/Channels/101"
 
 # Buka video stream RTSP
-cap = cv2.VideoCapture(rtsp_url)
+cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
     print("Gagal membuka RTSP stream")

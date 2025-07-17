@@ -10,7 +10,8 @@ license_plate_model = YOLO("license_plate_detector.pt")
 vehicle_classes = ['car', 'motorcycle', 'bus', 'truck']
 license_plate_classes = ['license_plate']  # sesuaikan jika nama kelas berbeda di model plat nomor
 
-rtsp_url = "rtsp://admin:adybangun12@192.168.0.64:554/Streaming/Channels/101"
+# rtsp_url = "rtsp://admin:adybangun12@192.168.0.64:554/Streaming/Channels/101"
+rtsp_url = 0
 
 frame_queue = queue.Queue(maxsize=5)
 stop_flag = False
