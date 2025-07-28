@@ -37,9 +37,7 @@ class worker_ocr:
             api_url="https://detect.roboflow.com",
             api_key="EheH0mexmA60NICeX1rp"
         )
-      
         result = CLIENT.infer(image, model_id="license-ocr-qqq6v/3")
-
         print(result[predictions])
         return result[predictions]
 

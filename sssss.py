@@ -1,33 +1,35 @@
+from ultralytics import YOLO
 import cv2
 
-rtsp_url  = "rtsp://admin:adybangun12@192.168.0.64:554/Streaming/Channels/101"
-cap = cv2.VideoCapture(rtsp_url)
+# Load model YOLOv8 yang sudah Anda train
+model = YOLO('License Plate Recognition.v11i.yolov8/runs/detect/train/weights/best.pt')
 
-if not cap.isOpened():
-    print("Tidak bisa membuka stream RTSP")
-    exit()
+# Fungsi untuk mendeteksi plate nomor pada gambar
+def detect_plate(image_path):
+    # Baca gambar
+    img = cv2.imread(image_path)
 
-width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-fps = cap.get(cv2.CAP_PROP_FPS) or 25
+    # Lakukan prediksi/deteksi menggunakan model
+    results = model(img)
 
-fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-output = cv2.VideoWriter('rekaman_live.avi', fourcc, fps, (width, height))
+    # Ambil hasil deteksi (bounding boxes, confidence, class, dll)
+    for result in results:
+        boxes = result.boxes  # bounding boxes
+        for box in boxes:
+            # Bounding box koordinat
+            xyxy = box.xyxy[0].cpu().numpy()  # format (xmin, ymin, xmax, ymax)
+            conf = box.conf[0].cpu().numpy()
+            cls = box.cls[0].cpu().numpy()
 
-print("Tekan 'q' untuk berhenti rekaman dan keluar")
+            # Tampilkan bounding box dan confidence pada gambar
+            cv2.rectangle(img, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0, 255, 0), 2)
+            cv2.putText(img, f"Conf: {conf:.2f}", (int(xyxy[0]), int(xyxy[1] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        print("Frame tidak diterima, keluar...")
-        break
-    
-    cv2.imshow("Live RTSP Camera", frame)
-    output.write(frame)
-    
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    # Tampilkan hasil deteksi
+    cv2.imshow("Result", img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-cap.release()
-output.release()
-cv2.destroyAllWindows()
+# Contoh panggilan fungsi dengan file gambar yang ingin diperiksa
+# detect_plate('License Plate Recognition.v11i.yolov8/test/images/20-cdmx2017policia-c_jpg.rf.80df9245b5dd6f7e54d1d48ca2241e2f.jpg')
+detect_plate('dsa.png')  # Ganti dengan path gambar yang sesuaia

@@ -9,6 +9,10 @@ ultralytics = "*"
 pytesseract = "*"
 easyocr = "*"
 opencv-python = "*"
+python-vlc = "*"
+roboflow = "*"
+opencv-contrib-python = "*"
+openai = "*"
 
 [dev-packages]
 
