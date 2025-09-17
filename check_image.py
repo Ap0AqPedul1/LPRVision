@@ -166,7 +166,7 @@ if __name__ == "__main__":
     detector = PlateDetectorOCR("yolo/plate.pt")
 
     # Daftar gambar
-    images = ["image/test_1.jpeg"]
+    images = ["image/test_123.jpg"]
 
     for img in images:
         detector.detect_plate(img)
