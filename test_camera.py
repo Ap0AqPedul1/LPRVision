@@ -5,6 +5,8 @@ from datetime import datetime
 from ultralytics import YOLO
 import easyocr
 import numpy as np
+from inference_sdk import InferenceHTTPClient
+
 
 RTSP_URL = "rtsp://admin:adybangun12@192.168.0.64:554/Streaming/Channels/101"
 MODEL_PATH = "yolo/plate.pt"  # ganti path jika perlu

@@ -7,7 +7,17 @@ import os
 import json
 
 class PlateDetectorOCR:
-    def __init__(self, model_path="plate.pt", crop_config="crop_config.json"):
+    def __init__(
+        self,
+        model_path="plate.pt",
+        crop_config="crop_config.json",
+        conf_threshold=0.25,      # bisa 0.25 (25%) atau 25 (persen)
+        overlap_threshold=0.50    # bisa 0.50 (50%) atau 50 (persen)
+    ):
+        # --- normalisasi input persen/desimal ---
+        self.conf = self._to_unit_interval(conf_threshold)
+        self.overlap = self._to_unit_interval(overlap_threshold)
+
         # Load YOLOv8
         self.model = YOLO(model_path)
         # EasyOCR
@@ -24,6 +34,25 @@ class PlateDetectorOCR:
             with open(crop_config, "r") as f:
                 self.crop_cfg = json.load(f)
             print("[INFO] Crop config loaded:", self.crop_cfg)
+
+        print(f"[THRESH] Confidence={self.conf:.2f} | Overlap(IOU)={self.overlap:.2f}")
+
+    @staticmethod
+    def _to_unit_interval(v):
+        """Terima v dalam 0–1 atau 0–100; kembalikan 0–1."""
+        try:
+            v = float(v)
+        except Exception:
+            return 0.25
+        return v/100.0 if v > 1.0 else v
+
+    def set_thresholds(self, conf=None, overlap=None):
+        """Ubah threshold kapan saja; terima persen atau desimal."""
+        if conf is not None:
+            self.conf = self._to_unit_interval(conf)
+        if overlap is not None:
+            self.overlap = self._to_unit_interval(overlap)
+        print(f"[THRESH] Confidence={self.conf:.2f} | Overlap(IOU)={self.overlap:.2f}")
 
     def apply_crop_config(self, img):
         """Crop manual berdasarkan crop_config.json"""
@@ -46,7 +75,8 @@ class PlateDetectorOCR:
             img = self.apply_crop_config(img)
             print("[INFO] Gambar dicrop sesuai crop_config.json")
 
-        results = self.model(img)
+        # --- pakai threshold di sini ---
+        results = self.model(img, conf=self.conf, iou=self.overlap)
 
         for r in results:
             boxes = r.boxes
@@ -115,10 +145,7 @@ class PlateDetectorOCR:
         dominant_color = max(colors, key=colors.get)
         print("Warna plat dominan:", dominant_color)
 
-        if dominant_color == "hitam":
-            final_plate = inverted
-        else:
-            final_plate = thresh
+        final_plate = inverted if dominant_color == "hitam" else thresh
 
         # Simpan hasil threshold
         threshold_name = f"output/threshold_{os.path.basename(img_name)}"
@@ -163,11 +190,16 @@ class PlateDetectorOCR:
 
 
 if __name__ == "__main__":
-    detector = PlateDetectorOCR("yolo/plate.pt")
+    # bisa pakai persen…
+    detector = PlateDetectorOCR("yolo/plate.pt", conf_threshold=50, overlap_threshold=50)
+    # …atau desimal
+    # detector = PlateDetectorOCR("yolo/plate.pt", conf_threshold=0.10, overlap_threshold=0.50)
 
-    # Daftar gambar
-    images = ["image/test_3.jpg"]
+    # ubah sewaktu-waktu
+    detector.set_thresholds(conf=15)       # 15% -> 0.15
+    detector.set_thresholds(overlap=0.45)  # 0.45 -> 45%
 
+    images = ["output/azhari.jpg"]
     for img in images:
         detector.detect_plate(img)
         detector.process_ocr(img_name=img)
